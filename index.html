@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Disease Clinical Decision Support System</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 24px 32px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: #3b82f6;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .header-titles h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header-titles p {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .status-panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+      transition: background 0.3s ease;
+    }
+
+    .status-dot.online {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .status-dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    /* Container */
+    main {
+      max-width: 1200px;
+      margin: 28px auto 0;
+      padding: 0 20px;
+    }
+
+    /* Notice Banner */
+    .banner {
+      background: var(--primary-light);
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13.5px;
+    }
+
+    .banner code {
+      background: rgba(37, 99, 235, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    /* Disease Navigation Tabs */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-tabs {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tab-btn {
+      background: var(--surface);
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-btn:hover {
+      border-color: #93c5fd;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 20px;
+      right: 20px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .tab-icon {
+      font-size: 26px;
+      width: 44px;
+      height: 44px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-info h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .tab-info span {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    /* Workspace Layout */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Action Buttons Bar */
+    .preset-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-preset {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-preset:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+
+    .btn-preset.primary-preset {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    .btn-preset.primary-preset:hover {
+      background: #fecaca;
+    }
+
+    .btn-preset.success-preset {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .btn-preset.success-preset:hover {
+      background: #bbf7d0;
+    }
+
+    /* Form Fields Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .form-group label span.unit {
+      color: var(--text-muted);
+      font-weight: normal;
+      font-size: 11.5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      background: #ffffff;
+      color: var(--text-main);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    select.form-control {
+      cursor: pointer;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Section Subheaders */
+    .section-divider {
+      grid-column: 1 / -1;
+      padding-top: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--card-border);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* Predict Submit Button */
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 13px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Result Panel */
+    .result-container {
+      position: sticky;
+      top: 20px;
+    }
+
+    .placeholder-result {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .placeholder-icon {
+      font-size: 44px;
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+    .result-card {
+      display: none;
+    }
+
+    .result-card.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .diagnosis-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+    }
+
+    .diagnosis-badge.danger {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .diagnosis-badge.success {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    .metric-gauge {
+      margin: 18px 0;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .gauge-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .gauge-header strong {
+      color: var(--text-main);
+      font-size: 16px;
+    }
+
+    .progress-bar-bg {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+      background: var(--primary);
+    }
+
+    .progress-bar-fill.danger {
+      background: linear-gradient(90deg, #f87171, #ef4444);
+    }
+
+    .progress-bar-fill.success {
+      background: linear-gradient(90deg, #34d399, #10b981);
+    }
+
+    .advice-box {
+      background: var(--bg);
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .advice-box.danger {
+      border-left-color: var(--danger);
+      background: #fff5f5;
+    }
+
+    .advice-box.success {
+      border-left-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .advice-box strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* JSON Debug Drawer */
+    .json-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-top: 18px;
+      display: inline-block;
+    }
+
+    .json-viewer {
+      display: none;
+      margin-top: 10px;
+      background: #0f172a;
+      color: #f1f5f9;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      font-size: 11.5px;
+      overflow-x: auto;
+      max-height: 200px;
+    }
+
+    /* Backend Settings Popover / modal */
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .settings-input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      width: 155px;
+    }
+
+    .settings-btn {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 4px 9px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-brand">
+        <div class="logo-icon">🩺</div>
+        <div class="header-titles">
+          <h1>Clinical Decision Support Suite</h1>
+          <p>Minor Project (Part 1) &bull; Multi-Disease Machine Learning Screening</p>
+        </div>
+      </div>
+
+      <div class="status-panel">
+        <div id="statusDot" class="status-dot"></div>
+        <span id="statusText">Checking Backend...</span>
+        <div class="settings-row">
+          <input type="text" id="backendUrl" class="settings-input" value="http://127.0.0.1:5000" title="Flask Backend API URL" />
+          <button id="pingBtn" class="settings-btn" onclick="checkBackendHealth()">Ping</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Notice Banner -->
+    <div id="offlineNotice" class="banner" style="display: none;">
+      <div>
+        <strong>⚡ Standalone / Simulation Mode:</strong> Flask backend is currently offline. You can test inputs with the interactive simulator now, or run <code>python app.py</code> in your project terminal to connect trained ML models.
+      </div>
+      <button class="btn-preset" onclick="checkBackendHealth()">Retry Connection</button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchDisease('heart')">
+        <div class="tab-icon">🫀</div>
+        <div class="tab-info">
+          <h3>Coronary Heart Disease</h3>
+          <span>Logistic Regression &bull; 13 Features</span>
+        </div>
+      </button>
+
+      <button class="tab-btn" onclick="switchDisease('diabetes')">
+        <div class="tab-icon">🩸</div>
+        <div class="tab-info">
+          <h3>Type-2 Diabetes</h3>
+          <span>Gradient Boosting &bull; 8 Features</span>
+        </div>
+      </button>
+
+      <button class="tab-btn" onclick="switchDisease('parkinsons')">
+        <div class="tab-icon">🧠</div>
+        <div class="tab-info">
+          <h3>Parkinson's Disease</h3>
+          <span>Decision Tree (Vocal) &bull; 22 Features</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div class="workspace-grid">
+      <!-- Left: Input Form Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 id="currentDiseaseTitle" class="card-title">Heart Disease Clinical Assessment</h2>
+            <p id="currentDiseaseSubtitle" style="font-size: 12px; color: var(--text-muted);">Enter physiological vitals to calculate cardiac risk profile.</p>
+          </div>
+          <div class="preset-group">
+            <button class="btn-preset primary-preset" onclick="loadPreset('high_risk')">⚠️ High-Risk Sample</button>
+            <button class="btn-preset success-preset" onclick="loadPreset('healthy')">✅ Normal Sample</button>
+            <button class="btn-preset" onclick="resetForm()">🔄 Clear</button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form id="predictionForm" onsubmit="handleFormSubmit(event)">
+            <div id="formFieldsContainer" class="form-grid">
+              <!-- Dynamically populated fields -->
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-submit">
+              <span>Run Diagnostic Screening</span>
+              <span>&rarr;</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right: Real-time Diagnostic Analysis Panel -->
+      <div class="result-container">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Diagnostic Screening Result</h2>
+            <span id="modelBadge" style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Model Ready</span>
+          </div>
+
+          <div class="card-body">
+            <!-- Empty Placeholder -->
+            <div id="emptyResultPrompt" class="placeholder-result">
+              <div class="placeholder-icon">📋</div>
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">No Assessment Generated</h3>
+              <p style="font-size: 13px;">Fill in the clinical indicators or click a preset sample, then click <strong>"Run Diagnostic Screening"</strong>.</p>
+            </div>
+
+            <!-- Active Result Content -->
+            <div id="activeResultCard" class="result-card">
+              <div id="riskBadge" class="diagnosis-badge danger">
+                <span id="riskIcon">⚠️</span>
+                <span id="riskStatusText">High Risk Detected</span>
+              </div>
+
+              <div class="metric-gauge">
+                <div class="gauge-header">
+                  <span>Calculated Risk Probability</span>
+                  <strong id="probPercentageText">85.4%</strong>
+                </div>
+                <div class="progress-bar-bg">
+                  <div id="progressBarFill" class="progress-bar-fill danger" style="width: 85%;"></div>
+                </div>
+              </div>
+
+              <div id="clinicalAdviceBox" class="advice-box danger">
+                <strong id="adviceHeader">Clinical Recommendation</strong>
+                <p id="adviceBody">Cardiovascular risk detected. Immediate follow-up with ECG/angiography recommended.</p>
+              </div>
+
+              <div style="margin-top: 16px; font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                <span>Prediction Code: <strong id="predCode">1</strong></span>
+                <span>Source: <strong id="engineSource">Live ML Backend</strong></span>
+              </div>
+
+              <!-- Collapsible JSON Debugger -->
+              <button type="button" class="json-toggle-btn" onclick="toggleJsonView()">Toggle Raw JSON Payload</button>
+              <pre id="jsonViewer" class="json-viewer"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Configuration & Disease Schemas
+    let currentDisease = 'heart';
+    let isBackendOnline = false;
+
+    // Feature Schemas matching app.py exactly
+    const DISEASE_CONFIGS = {
+      heart: {
+        title: "Heart Disease Clinical Assessment",
+        subtitle: "Cleveland Heart Dataset parameters &bull; Logistic Regression Classifier",
+        endpoint: "/predict/heart",
+        modelName: "Logistic Regression (Standardized)",
+        fields: [
+          { id: "age", label: "Patient Age", unit: "years", type: "number", min: 1, max: 120, step: 1, default: 50 },
+          { id: "sex", label: "Biological Sex", unit: "", type: "select", options: [{val: 1, label: "Male (1)"}, {val: 0, label: "Female (0)"}], default: 1 },
+          { id: "cp", label: "Chest Pain Type", unit: "type (0-3)", type: "select", options: [
+            {val: 0, label: "0: Typical Angina"},
+            {val: 1, label: "1: Atypical Angina"},
+            {val: 2, label: "2: Non-Anginal Pain"},
+            {val: 3, label: "3: Asymptomatic"}
+          ], default: 3 },
+          { id: "trestbps", label: "Resting Blood Pressure", unit: "mm Hg", type: "number", min: 60, max: 240, step: 1, default: 85 },
+          { id: "chol", label: "Serum Cholesterol", unit: "mg/dl", type: "number", min: 100, max: 600, step: 1, default: 133 },
+          { id: "fbs", label: "Fasting Blood Sugar > 120", unit: "", type: "select", options: [{val: 1, label: "True (> 120 mg/dl)"}, {val: 0, label: "False (≤ 120 mg/dl)"}], default: 1 },
+          { id: "restecg", label: "Resting ECG Results", unit: "0-2", type: "select", options: [
+            {val: 0, label: "0: Normal"},
+            {val: 1, label: "1: ST-T Wave Abnormality"},
+            {val: 2, label: "2: Left Ventricular Hypertrophy"}
+          ], default: 0 },
+          { id: "thalach", label: "Max Heart Rate Achieved", unit: "bpm", type: "number", min: 50, max: 230, step: 1, default: 72 },
+          { id: "exang", label: "Exercise Induced Angina", unit: "", type: "select", options: [{val: 1, label: "Yes (1)"}, {val: 0, label: "No (0)"}], default: 0 },
+          { id: "oldpeak", label: "ST Depression (Oldpeak)", unit: "mm", type: "number", min: 0, max: 10, step: 0.1, default: 2.3 },
+          { id: "slope", label: "Slope of Peak Exercise ST", unit: "0-2", type: "select", options: [
+            {val: 0, label: "0: Upsloping"},
+            {val: 1, label: "1: Flat"},
+            {val: 2, label: "2: Downsloping"}
+          ], default: 0 },
+          { id: "ca", label: "Major Fluoroscopy Vessels", unit: "0-4", type: "select", options: [
+            {val: 0, label: "0 vessels"},
+            {val: 1, label: "1 vessel"},
+            {val: 2, label: "2 vessels"},
+            {val: 3, label: "3 vessels"},
+            {val: 4, label: "4 vessels"}
+          ], default: 0 },
+          { id: "thal", label: "Thalassemia Status", unit: "0-3", type: "select", options: [
+            {val: 0, label: "0: Normal"},
+            {val: 1, label: "1: Fixed Defect"},
+            {val: 2, label: "2: Reversible Defect"},
+            {val: 3, label: "3: Unknown/Other"}
+          ], default: 1 }
+        ],
+        presets: {
+          high_risk: [50, 1, 3, 85, 133, 1, 0, 72, 0, 2.3, 0, 0, 1],
+          healthy: [48, 1, 0, 100, 204, 0, 1, 102, 1, 2.2, 1, 0, 3]
+        }
+      },
+
+      diabetes: {
+        title: "Type-2 Diabetes Clinical Assessment",
+        subtitle: "Pima Indians Diabetes Database &bull; Gradient Boosting Classifier",
+        endpoint: "/predict/diabetes",
+        modelName: "Gradient Boosting Classifier",
+        fields: [
+          { id: "Pregnancies", label: "Number of Pregnancies", unit: "count", type: "number", min: 0, max: 20, step: 1, default: 6 },
+          { id: "Glucose", label: "Glucose Concentration (2h)", unit: "mg/dL", type: "number", min: 40, max: 300, step: 1, default: 148 },
+          { id: "BloodPressure", label: "Diastolic Blood Pressure", unit: "mm Hg", type: "number", min: 30, max: 150, step: 1, default: 72 },
+          { id: "SkinThickness", label: "Triceps Skin Fold", unit: "mm", type: "number", min: 0, max: 99, step: 1, default: 35 },
+          { id: "Insulin", label: "2-Hour Serum Insulin", unit: "μU/mL", type: "number", min: 0, max: 800, step: 1, default: 0 },
+          { id: "BMI", label: "Body Mass Index (BMI)", unit: "kg/m²", type: "number", min: 10, max: 70, step: 0.1, default: 33.6 },
+          { id: "DiabetesPedigreeFunction", label: "Diabetes Pedigree Function", unit: "genetic score", type: "number", min: 0.05, max: 3.0, step: 0.001, default: 0.627 },
+          { id: "Age", label: "Patient Age", unit: "years", type: "number", min: 1, max: 120, step: 1, default: 50 }
+        ],
+        presets: {
+          high_risk: [6, 148, 72, 35, 0, 33.6, 0.627, 50],
+          healthy: [1, 95, 70, 20, 80, 22.4, 0.15, 25]
+        }
+      },
+
+      parkinsons: {
+        title: "Parkinson's Acoustic Biomarker Assessment",
+        subtitle: "Oxford Telemonitoring Acoustic Study &bull; Decision Tree Classifier",
+        endpoint: "/predict/parkinsons",
+        modelName: "Decision Tree Classifier",
+        fields: [
+          // Section 1: Frequency
+          { divider: "Fundamental Vocal Frequencies" },
+          { id: "MDVP:Fo(Hz)", label: "Average Vocal Freq (Fo)", unit: "Hz", type: "number", step: 0.001, default: 119.992 },
+          { id: "MDVP:Fhi(Hz)", label: "Maximum Vocal Freq (Fhi)", unit: "Hz", type: "number", step: 0.001, default: 157.302 },
+          { id: "MDVP:Flo(Hz)", label: "Minimum Vocal Freq (Flo)", unit: "Hz", type: "number", step: 0.001, default: 74.997 },
+
+          // Section 2: Jitter
+          { divider: "Jitter Perturbations (Cycle-to-Cycle Period Variance)" },
+          { id: "MDVP:Jitter(%)", label: "MDVP Jitter (%)", unit: "%", type: "number", step: 0.00001, default: 0.00784 },
+          { id: "MDVP:Jitter(Abs)", label: "MDVP Absolute Jitter", unit: "sec", type: "number", step: 0.000001, default: 0.00007 },
+          { id: "MDVP:RAP", label: "Relative Amplitude Perturbation", unit: "", type: "number", step: 0.00001, default: 0.00370 },
+          { id: "MDVP:PPQ", label: "5-point Period Perturbation (PPQ)", unit: "", type: "number", step: 0.00001, default: 0.00554 },
+          { id: "Jitter:DDP", label: "Average Period Difference (DDP)", unit: "", type: "number", step: 0.00001, default: 0.01109 },
+
+          // Section 3: Shimmer
+          { divider: "Shimmer Perturbations (Cycle-to-Cycle Amplitude Variance)" },
+          { id: "MDVP:Shimmer", label: "MDVP Shimmer (Local)", unit: "", type: "number", step: 0.00001, default: 0.04374 },
+          { id: "MDVP:Shimmer(dB)", label: "MDVP Shimmer (dB)", unit: "dB", type: "number", step: 0.001, default: 0.426 },
+          { id: "Shimmer:APQ3", label: "3-point Amplitude Perturbation", unit: "", type: "number", step: 0.00001, default: 0.02182 },
+          { id: "Shimmer:APQ5", label: "5-point Amplitude Perturbation", unit: "", type: "number", step: 0.00001, default: 0.03130 },
+          { id: "MDVP:APQ", label: "MDVP 11-point Perturbation (APQ)", unit: "", type: "number", step: 0.00001, default: 0.02971 },
+          { id: "Shimmer:DDA", label: "Average Amplitude Difference (DDA)", unit: "", type: "number", step: 0.00001, default: 0.06545 },
+
+          // Section 4: Harmonic & Non-Linear
+          { divider: "Harmonics & Non-Linear Complexity" },
+          { id: "NHR", label: "Noise-to-Harmonics Ratio (NHR)", unit: "", type: "number", step: 0.00001, default: 0.02211 },
+          { id: "HNR", label: "Harmonics-to-Noise Ratio (HNR)", unit: "dB", type: "number", step: 0.001, default: 21.033 },
+          { id: "RPDE", label: "Recurrence Period Density Entropy", unit: "", type: "number", step: 0.00001, default: 0.414783 },
+          { id: "DFA", label: "Detrended Fluctuation Analysis", unit: "", type: "number", step: 0.00001, default: 0.815285 },
+          { id: "spread1", label: "Nonlinear Spread 1", unit: "", type: "number", step: 0.00001, default: -4.813031 },
+          { id: "spread2", label: "Nonlinear Spread 2", unit: "", type: "number", step: 0.00001, default: 0.266482 },
+          { id: "D2", label: "Correlation Dimension (D2)", unit: "", type: "number", step: 0.00001, default: 2.301442 },
+          { id: "PPE", label: "Pitch Period Entropy (PPE)", unit: "", type: "number", step: 0.00001, default: 0.284654 }
+        ],
+        presets: {
+          high_risk: [
+            119.992, 157.302, 74.997, 0.00784, 0.00007, 0.0037, 
+            0.00554, 0.01109, 0.04374, 0.426, 0.02182, 0.0313, 
+            0.02971, 0.06545, 0.02211, 21.033, 0.414783, 0.815285, 
+            -4.813031, 0.266482, 2.301442, 0.284654
+          ],
+          healthy: [
+            197.076, 206.896, 192.055, 0.00289, 0.00001, 0.00166, 
+            0.00168, 0.00498, 0.01098, 0.097, 0.00563, 0.0068, 
+            0.00802, 0.01689, 0.00339, 26.775, 0.422229, 0.741367, 
+            -7.3483, 0.177551, 1.743867, 0.085569
+          ]
+        }
+      }
+    };
+
+    // Get current backend URL
+    function getBackendUrl() {
+      // If current host is port 5000 or same origin
+      if (window.location.origin.includes(':5000')) {
+        return window.location.origin;
+      }
+      return document.getElementById('backendUrl').value.replace(/\/+$/, '');
+    }
+
+    // Health Check Backend
+    async function checkBackendHealth() {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      const banner = document.getElementById('offlineNotice');
+      const baseUrl = getBackendUrl();
+
+      dot.className = "status-dot";
+      text.innerText = "Connecting...";
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${baseUrl}/`, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          isBackendOnline = true;
+          dot.className = "status-dot online";
+          text.innerText = "Flask Backend: Online";
+          banner.style.display = "none";
+          return true;
+        }
+      } catch (err) {
+        // Fallback or offline
+      }
+
+      isBackendOnline = false;
+      dot.className = "status-dot offline";
+      text.innerText = "Flask: Offline (Sim Mode)";
+      banner.style.display = "flex";
+      return false;
+    }
+
+    // Render Form Fields
+    function renderForm() {
+      const config = DISEASE_CONFIGS[currentDisease];
+      document.getElementById('currentDiseaseTitle').innerHTML = config.title;
+      document.getElementById('currentDiseaseSubtitle').innerHTML = config.subtitle;
+      document.getElementById('modelBadge').innerText = config.modelName;
+
+      const container = document.getElementById('formFieldsContainer');
+      container.innerHTML = '';
+
+      config.fields.forEach(f => {
+        if (f.divider) {
+          const div = document.createElement('div');
+          div.className = "section-divider";
+          div.innerText = f.divider;
+          container.appendChild(div);
+          return;
+        }
+
+        const group = document.createElement('div');
+        group.className = "form-group";
+
+        const label = document.createElement('label');
+        label.setAttribute('for', f.id);
+        label.innerHTML = `<span>${f.label}</span> ${f.unit ? `<span class="unit">[${f.unit}]</span>` : ''}`;
+        group.appendChild(label);
+
+        if (f.type === 'select') {
+          const select = document.createElement('select');
+          select.id = f.id;
+          select.className = "form-control";
+          f.options.forEach(opt => {
+            const optEl = document.createElement('option');
+            optEl.value = opt.val;
+            optEl.innerText = opt.label;
+            if (opt.val === f.default) optEl.selected = true;
+            select.appendChild(optEl);
+          });
+          group.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.type = "number";
+          input.id = f.id;
+          input.className = "form-control";
+          if (f.min !== undefined) input.min = f.min;
+          if (f.max !== undefined) input.max = f.max;
+          if (f.step !== undefined) input.step = f.step;
+          input.value = f.default;
+          group.appendChild(input);
+        }
+
+        container.appendChild(group);
+      });
+    }
+
+    // Switch Disease Tab
+    function switchDisease(disease) {
+      currentDisease = disease;
+
+      // Update Tab Styles
+      const buttons = document.querySelectorAll('.nav-tabs .tab-btn');
+      buttons.forEach((btn, idx) => {
+        const diseases = ['heart', 'diabetes', 'parkinsons'];
+        if (diseases[idx] === disease) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      renderForm();
+
+      // Reset results display to empty prompt
+      document.getElementById('emptyResultPrompt').style.display = 'block';
+      document.getElementById('activeResultCard').classList.remove('active');
+    }
+
+    // Load Presets
+    function loadPreset(type) {
+      const config = DISEASE_CONFIGS[currentDisease];
+      const presetValues = config.presets[type];
+      if (!presetValues) return;
+
+      const inputFields = config.fields.filter(f => !f.divider);
+      inputFields.forEach((f, index) => {
+        const el = document.getElementById(f.id);
+        if (el) {
+          el.value = presetValues[index];
+        }
+      });
+    }
+
+    // Clear Form Fields
+    function resetForm() {
+      const config = DISEASE_CONFIGS[currentDisease];
+      const inputFields = config.fields.filter(f => !f.divider);
+      inputFields.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (el) el.value = '';
+      });
+    }
+
+    // Get input values array in exact order
+    function getFormValues() {
+      const config = DISEASE_CONFIGS[currentDisease];
+      const inputFields = config.fields.filter(f => !f.divider);
+      return inputFields.map(f => {
+        const el = document.getElementById(f.id);
+        return el ? parseFloat(el.value || 0) : 0;
+      });
+    }
+
+    // Handle Form Submit
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span>Analyzing Clinical Parameters...</span>`;
+
+      const values = getFormValues();
+      const payload = { features: values };
+      const config = DISEASE_CONFIGS[currentDisease];
+      const baseUrl = getBackendUrl();
+
+      let resultData = null;
+      let usedSimulation = false;
+
+      try {
+        const res = await fetch(`${baseUrl}${config.endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          resultData = await res.json();
+          usedSimulation = false;
+        } else {
+          const errText = await res.text();
+          throw new Error(`API Returned ${res.status}: ${errText}`);
+        }
+      } catch (err) {
+        console.warn("Backend call failed, executing smart offline simulation:", err);
+        usedSimulation = true;
+        resultData = simulatePrediction(currentDisease, values);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+
+      displayResult(resultData, payload, usedSimulation);
+    }
+
+    // Intelligent Offline Simulation fallback
+    function simulatePrediction(disease, vals) {
+      if (disease === 'heart') {
+        const isHighRisk = (vals[0] > 55 || vals[2] > 1 || vals[4] > 220 || vals[9] > 1.8);
+        return {
+          success: true,
+          disease: "Coronary Heart Disease (Simulation Mode)",
+          prediction: isHighRisk ? 1 : 0,
+          risk_status: isHighRisk ? "High Risk Detected" : "Normal / Low Risk",
+          probability_percentage: isHighRisk ? 74.25 : 12.80,
+          clinical_notes: isHighRisk
+            ? "Cardiovascular risk detected. Immediate follow-up with ECG/angiography recommended."
+            : "Cardiovascular biomarkers within normal physiological thresholds."
+        };
+      } else if (disease === 'diabetes') {
+        const glucose = vals[1] || 100;
+        const bmi = vals[5] || 25;
+        const isHigh = (glucose >= 130 || bmi >= 30);
+        return {
+          success: true,
+          disease: "Type-2 Diabetes Mellitus (Simulation Mode)",
+          prediction: isHigh ? 1 : 0,
+          risk_status: isHigh ? "High Risk Detected" : "Normal / Low Risk",
+          probability_percentage: isHigh ? 88.50 : 18.20,
+          clinical_notes: isHigh
+            ? "Metabolic anomaly detected. HbA1c test and dietary glycemic control advised."
+            : "Metabolic parameters nominal."
+        };
+      } else {
+        // parkinsons
+        const jitter = vals[3] || 0.005;
+        const hnr = vals[15] || 22;
+        const isPark = (jitter > 0.006 || hnr < 20);
+        return {
+          success: true,
+          disease: "Parkinson's Disease (Simulation Mode)",
+          prediction: isPark ? 1 : 0,
+          risk_status: isPark ? "Parkinson's Disease Detected" : "Healthy Voice Biomarkers",
+          probability_percentage: isPark ? 91.40 : 8.50,
+          clinical_notes: isPark
+            ? "Acoustic perturbation patterns indicate vocal impairment consistent with Parkinson's."
+            : "Vocal frequency and tremor measures within normal boundaries."
+        };
+      }
+    }
+
+    // Display the Results
+    function displayResult(data, requestPayload, isSimulated) {
+      document.getElementById('emptyResultPrompt').style.display = 'none';
+      const activeCard = document.getElementById('activeResultCard');
+      activeCard.classList.add('active');
+
+      const isPositive = (data.prediction === 1);
+      const riskBadge = document.getElementById('riskBadge');
+      const riskIcon = document.getElementById('riskIcon');
+      const riskStatusText = document.getElementById('riskStatusText');
+      const probText = document.getElementById('probPercentageText');
+      const progressFill = document.getElementById('progressBarFill');
+      const adviceBox = document.getElementById('clinicalAdviceBox');
+      const adviceBody = document.getElementById('adviceBody');
+      const predCode = document.getElementById('predCode');
+      const engineSource = document.getElementById('engineSource');
+
+      // Update styling based on risk
+      if (isPositive) {
+        riskBadge.className = "diagnosis-badge danger";
+        riskIcon.innerText = "⚠️";
+        progressFill.className = "progress-bar-fill danger";
+        adviceBox.className = "advice-box danger";
+      } else {
+        riskBadge.className = "diagnosis-badge success";
+        riskIcon.innerText = "✅";
+        progressFill.className = "progress-bar-fill success";
+        adviceBox.className = "advice-box success";
+      }
+
+      riskStatusText.innerText = data.risk_status || (isPositive ? "High Risk Detected" : "Normal / Low Risk");
+      const prob = data.probability_percentage !== undefined ? data.probability_percentage : (isPositive ? 80 : 15);
+      probText.innerText = `${prob}%`;
+      progressFill.style.width = `${Math.min(100, Math.max(0, prob))}%`;
+      adviceBody.innerText = data.clinical_notes || "Clinical evaluation complete.";
+      predCode.innerText = data.prediction;
+      engineSource.innerText = isSimulated ? "Demo Simulation Engine" : "Live ML Scikit-Learn Model";
+
+      // JSON Viewer
+      const debugPayload = {
+        request: requestPayload,
+        response: data,
+        mode: isSimulated ? "offline_simulation" : "live_flask_api"
+      };
+      document.getElementById('jsonViewer').innerText = JSON.stringify(debugPayload, null, 2);
+    }
+
+    // Toggle JSON payload viewer
+    function toggleJsonView() {
+      const viewer = document.getElementById('jsonViewer');
+      viewer.style.display = (viewer.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // Init on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderForm();
+      checkBackendHealth();
+      const urlParams = new URLSearchParams(window.location.search);
+      const demo = urlParams.get('demo');
+      if (demo) {
+        if (['heart', 'diabetes', 'parkinsons'].includes(demo)) {
+          switchDisease(demo);
+        }
+        loadPreset('high_risk');
+        setTimeout(() => {
+          document.getElementById('predictionForm').dispatchEvent(new Event('submit'));
+        }, 150);
+      }
+    });
+  </script>
+</body>
+</html>

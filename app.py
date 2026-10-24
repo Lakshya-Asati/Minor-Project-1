@@ -12,7 +12,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
 # Initialize Flask Application
@@ -85,10 +85,39 @@ def extract_input_data(req_data, expected_feature_list):
 
 
 # =============================================================================
-# 0. Health Check / Welcome Route
+# 0. Health Check / Welcome / Web Dashboard Route
 # =============================================================================
 @app.route('/', methods=['GET'])
 def home():
+    accept = request.headers.get('Accept', '')
+    # If caller specifically requests application/json and not text/html, return JSON health status
+    if 'application/json' in accept and 'text/html' not in accept:
+        return jsonify({
+            "status": "online",
+            "system": "Multi-Disease Clinical Decision Support Backend",
+            "available_endpoints": [
+                {"method": "POST", "endpoint": "/predict/heart", "features_required": 13},
+                {"method": "POST", "endpoint": "/predict/diabetes", "features_required": 8},
+                {"method": "POST", "endpoint": "/predict/parkinsons", "features_required": 22}
+            ]
+        })
+    try:
+        return render_template('index.html')
+    except Exception:
+        return jsonify({
+            "status": "online",
+            "system": "Multi-Disease Clinical Decision Support Backend",
+            "available_endpoints": [
+                {"method": "POST", "endpoint": "/predict/heart", "features_required": 13},
+                {"method": "POST", "endpoint": "/predict/diabetes", "features_required": 8},
+                {"method": "POST", "endpoint": "/predict/parkinsons", "features_required": 22}
+            ]
+        })
+
+
+@app.route('/health', methods=['GET'])
+@app.route('/api/status', methods=['GET'])
+def api_status():
     return jsonify({
         "status": "online",
         "system": "Multi-Disease Clinical Decision Support Backend",
@@ -197,5 +226,5 @@ def predict_parkinsons():
 # =============================================================================
 if __name__ == '__main__':
     # Runs the local development server on port 5000
-    print("\n🚀 Starting Flask Backend on http://127.0.0.1:5000 ...")
+    print("\nStarting Flask Backend on http://127.0.0.1:5000 ...")
     app.run(debug=True, host='0.0.0.0', port=5000)
