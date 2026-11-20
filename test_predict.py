@@ -18,9 +18,9 @@ SAMPLES = {
         "title": "Coronary Heart Disease",
         "url": f"{BASE_URL}/predict/heart",
         "payload": {
-            "features": [50, 1, 3, 85, 133, 1, 0, 72, 0, 2.3, 0, 0, 1]
+            "features": [65, 1, 0, 155, 275, 1, 1, 108, 1, 2.8, 2, 3, 3]
         },
-        "description": "Patient: Age 63, Male, RestBP 145, Chol 233, MaxHR 150"
+        "description": "Patient: Age 65, Male, Angina, RestBP 155, Chol 275, ST Dep 2.8, 3 Vessels"
     },
     "parkinsons": {
         "title": "Parkinson's Disease (Acoustic Biomarkers)",
